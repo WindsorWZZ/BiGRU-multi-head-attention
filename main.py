@@ -289,12 +289,12 @@ def main():
     # Learning rate scheduler
     scheduler = optim.lr_scheduler.StepLR(
         optimizer,
-        step_size=300,  # LearnRateDropPeriod - adjusted for better performance
-        gamma=0.3  # LearnRateDropFactor - adjusted for better performance
+        step_size=400,  # LearnRateDropPeriod - adjusted for better performance
+        gamma=0.2  # LearnRateDropFactor - adjusted for better performance
     )
     
     # Training loop
-    num_epochs = 800 
+    num_epochs = 500 
     train_losses = []
     train_accuracies = []
     

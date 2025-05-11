@@ -7,7 +7,7 @@ class SelfAttentionLayer(nn.Module):
     """
     Self-attention layer implementation similar to MATLAB's selfAttentionLayer
     """
-    def __init__(self, input_dim, output_dim, num_heads=8):
+    def __init__(self, input_dim, output_dim, num_heads=1):
         super(SelfAttentionLayer, self).__init__()
         self.num_heads = num_heads
         self.input_dim = input_dim
@@ -21,10 +21,7 @@ class SelfAttentionLayer(nn.Module):
         )
         
         # Projection to output dimension if needed
-        if input_dim != output_dim:
-            self.projection = nn.Linear(input_dim, output_dim)
-        else:
-            self.projection = nn.Identity()
+        self.projection = nn.Linear(input_dim, output_dim)
     
     def forward(self, x):
         # x shape: (batch_size, seq_len, input_dim) or (batch_size, input_dim)
@@ -76,7 +73,7 @@ class BiGRUAttentionModel(nn.Module):
         # Self-attention layer
         self.self_attention = SelfAttentionLayer(
             input_dim=input_dim,
-            output_dim=input_dim
+            output_dim=input_dim,
         )
         
         # Fully connected layer

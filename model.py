@@ -7,12 +7,14 @@ class SelfAttentionLayer(nn.Module):
     """
     Self-attention layer implementation similar to MATLAB's selfAttentionLayer
     """
-    def __init__(self, input_dim, output_dim, num_heads=8):
+    def __init__(self, input_dim, output_dim, num_heads=1):
         super(SelfAttentionLayer, self).__init__()
         self.num_heads = num_heads
         self.input_dim = input_dim
         self.output_dim = output_dim
         
+        print(f"input_dim: {input_dim}, output_dim: {output_dim}, num_heads: {num_heads}")
+
         # Multi-head attention
         self.multihead_attention = nn.MultiheadAttention(
             embed_dim=input_dim,
@@ -45,9 +47,8 @@ class SelfAttentionLayer(nn.Module):
 class BiGRUAttentionModel(nn.Module):
     """
     Bidirectional GRU with Multi-head Attention model, 
-    based on the MATLAB implementation
     """
-    def __init__(self, input_dim, hidden_dim=5, num_classes=2):
+    def __init__(self, input_dim, hidden_dim, num_classes, num_heads):
         super(BiGRUAttentionModel, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -61,7 +62,7 @@ class BiGRUAttentionModel(nn.Module):
         )
         
         # Flip layer
-        self.flip = FlipLayer(dim=1)  # Flip along sequence dimension
+        self.flip = FlipLayer()  # Flip along sequence dimension
         
         # Backward GRU
         self.gru_backward = nn.GRU(
@@ -72,14 +73,16 @@ class BiGRUAttentionModel(nn.Module):
         
         # Self-attention layer
         self.self_attention = SelfAttentionLayer(
-            input_dim=input_dim,
-            output_dim=input_dim,
+            input_dim=2*hidden_dim,
+            output_dim=2*hidden_dim,
+            num_heads=num_heads
         )
         
         # Fully connected layer
         self.fc = nn.Linear(2*hidden_dim, num_classes)
         
-        # Softmax is included in the CrossEntropyLoss in PyTorch
+        # Softmax layer
+        self.soft = nn.Softmax(dim=1)
         
     def forward(self, x):
         # X shape: (batch_size, input_dim) or (batch_size, seq_len, input_dim)
@@ -89,14 +92,14 @@ class BiGRUAttentionModel(nn.Module):
             x = x.unsqueeze(1)  # Add sequence dimension (batch_size, 1, input_dim)
             
         # Forward GRU
-        forward_out, forward_hidden = self.gru_forward(x)
+        _, forward_hidden = self.gru_forward(x)
         
         # Get the last hidden state
         forward_hidden = forward_hidden.squeeze(0)  # (batch_size, hidden_dim)
         
         # Flip the input sequence and process through backward GRU
         x_flipped = self.flip(x)
-        backward_out, backward_hidden = self.gru_backward(x_flipped)
+        _, backward_hidden = self.gru_backward(x_flipped)
         
         # Get the last hidden state
         backward_hidden = backward_hidden.squeeze(0)  # (batch_size, hidden_dim)
@@ -108,6 +111,9 @@ class BiGRUAttentionModel(nn.Module):
         attention_out = self.self_attention(concat_hidden)
         
         # Apply fully connected layer to the concatenated hidden states
-        output = self.fc(attention_out)
+        fc_out = self.fc(attention_out)
+
+        # # Apply softmax to the output
+        output = self.soft(fc_out)
         
         return output 

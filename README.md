@@ -1,71 +1,98 @@
-# BiGRU-Multihead-Attention 分类模型
+# BiGRU with Multi-head Attention
 
-这是一个基于 PyTorch 实现的双向 GRU + 多头注意力机制的分类模型，翻译自 MATLAB 版本。模型可以在 CPU 环境下运行。
+This repository implements a Bidirectional Gated Recurrent Unit (BiGRU) neural network with Multi-head Attention for sequence classification tasks.
 
-## 项目结构
+## Model Architecture
 
-- `main.py` - 主程序，负责数据加载、模型训练和评估
-- `model.py` - 模型定义，包含 BiGRU-Attention 架构
-- `flip_layer.py` - 自定义翻转层，用于双向 GRU 实现
-- `polygon_area_metric.py` - 模型评价指标计算
-- `setup_env.sh` - 环境配置脚本（macOS/Linux）
+The architecture combines bidirectional recurrent neural networks with attention mechanisms for improved sequence modeling:
 
-## 快速环境配置
+### Key Components:
 
-项目提供了自动配置环境的脚本，只需一个命令即可完成所有环境设置：
+1. **Bidirectional GRU**: 
+   - Forward GRU processes the input sequence in its original order
+   - Backward GRU processes the input sequence in reversed order
+   - Both capture temporal dependencies in different directions
 
+2. **Multi-head Attention**:
+   - Applied to the concatenated hidden states from both GRUs
+   - Enables the model to focus on different parts of the feature representation
+   - Captures complex relationships between features
+
+3. **Classification Layers**:
+   - Fully connected layer transforms attention outputs
+   - Softmax activation for final classification probabilities
+
+## Usage
+**Prerequisites: Anaconda**
+
+To set up environment:
 ```bash
-# 添加执行权限
-chmod +x setup_env.sh
-
-# 执行脚本
 ./setup_env.sh
 ```
-
-脚本将自动执行以下操作：
-1. 检查并删除已存在的环境（如果有）
-2. 创建新的 Python 3.9 环境
-3. 安装所有必要的依赖
-4. 验证安装是否成功
-
-
-## 使用方法
-
-1. 确保数据文件 `System.xlsx` 位于当前目录
-2. 运行主程序：
+To train and evaluate the model:
 
 ```bash
-python main.py
+python -X utf8 main.py
 ```
 
-程序将执行以下步骤：
-1. 加载数据并按类别分割成训练集和测试集
-2. 构建和训练 BiGRU-Multihead-Attention 模型
-3. 在训练集和测试集上评估模型性能
-4. 显示各种性能指标和可视化结果
+Make sure to place your data file (data.xlsx) in the project directory.
 
-## 数据格式
+## Implementation Details
 
-输入数据应为 Excel 表格，其中：
-- 每行代表一个样本
-- 最后一列是样本的类别标签
-- 前面的列是特征数据
+The implementation uses PyTorch and includes:
 
-## 模型架构
+- `model.py`: Contains the neural network architecture implementation
+- `flip_layer.py`: Custom layer for sequence reversal
+- `main.py`: Training and evaluation pipeline
 
-该模型包含以下主要组件：
-- 前向 GRU 层
-- 反向 GRU 层（通过翻转输入序列实现）
-- 多头自注意力机制
-- 全连接层
+### Model Parameters
 
-## 性能评估
+- `input_dim`: Dimension of input features
+- `hidden_dim`: Hidden dimension for GRU units (default: 5)
+- `num_classes`: Number of output classes
+- `num_heads`: Number of attention heads for multi-head attention
 
-模型评估使用多种指标：
-- 多边形面积 (PAM)
-- 分类准确率
-- 灵敏度
-- 特异性
-- ROC 曲线下面积 (AUC)
-- Kappa 系数
-- F-measure 
+## Data Processing
+
+The pipeline handles:
+- Data normalization to [0,1] range
+- Train/test splitting with stratified sampling
+- Tensor conversion and batching
+
+## Training and Evaluation
+
+The model is trained using:
+- Adam optimizer
+- NLL Loss function
+- Learning rate scheduling
+- Gradient clipping
+
+Evaluation metrics include:
+- Classification accuracy
+- Confusion matrices
+- ROC curves
+- Polygon area metrics
+
+## Visualization
+
+The implementation includes functions to visualize:
+- Model architecture
+- Training progress
+- Prediction results
+- Confusion matrices
+- ROC curves
+
+## Requirements
+
+- Python 3.8+
+- PyTorch 1.7+
+- NumPy
+- Pandas
+- Scikit-learn
+- Matplotlib
+- tqdm
+- torchviz
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 

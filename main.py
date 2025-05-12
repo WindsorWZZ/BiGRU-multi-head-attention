@@ -326,7 +326,8 @@ def main():
     model = BiGRUAttentionModel(
         input_dim=num_dim,
         hidden_dim=5,
-        num_classes=num_class
+        num_classes=num_class,
+        num_heads=2
     ).to(device)
     
     # Print model summary
@@ -337,7 +338,8 @@ def main():
     visualize_model(model, input_shape=(1, num_dim), filename='model_visualization.png')
     
     # Define loss function and optimizer
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.NLLLoss() # Model already has a softmax layer
+
     optimizer = optim.Adam(
         model.parameters(),
         lr=0.001,  # Initial learning rate
@@ -352,7 +354,7 @@ def main():
     )
     
     # Training loop
-    num_epochs = 500 
+    num_epochs = 500
     train_losses_min = []
     train_losses_max = []
     train_accuracies_min = []

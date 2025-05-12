@@ -8,7 +8,7 @@ class FlipLayer(nn.Module):
     """
     def __init__(self, dim=2):
         super(FlipLayer, self).__init__()
-        self.dim = dim  # Default to dimension 2 (equivalent to dim 3 in MATLAB, accounting for 0-indexing)
+        self.dim = dim 
         
     def forward(self, x):
         # Flips the tensor along the specified dimension

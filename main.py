@@ -51,47 +51,62 @@ def set_seed(seed=9365):
     return seed
 
 # Define a function to plot training progress
-def plot_training_progress(train_losses_min, train_losses_max, train_accuracies_min, train_accuracies_max):
-    # # Set Chinese font support
-    # plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial']
-    # plt.rcParams['axes.unicode_minus'] = False  # Correctly display negative signs
+def plot_training_progress(train_losses, train_accuracies):
+    """
+    Plot training progress with mean ± standard deviation bands
     
+    Parameters:
+    train_losses: List of lists, each inner list contains batch losses for an epoch
+    train_accuracies: List of lists, each inner list contains batch accuracies for an epoch
+    """
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
     
-    # Calculate means for plotting
-    train_accuracies_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_accuracies_min, train_accuracies_max)]
-    train_losses_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_losses_min, train_losses_max)]
+    # Calculate statistics for each epoch
+    epochs = range(1, len(train_losses) + 1)
     
-    # Plot accuracy with fill between min and max values
-    iterations = range(1, len(train_accuracies_min) + 1)
-    ax1.plot(iterations, train_accuracies_mean, 'r-', linewidth=2, label='Average Accuracy')
-    # ax1.plot(iterations, train_accuracies_max, 'r-', linewidth=1, alpha=0.6)
-    # ax1.plot(iterations, train_accuracies_min, 'r-', linewidth=1, alpha=0.6)
-    # ax1.fill_between(iterations, train_accuracies_min, train_accuracies_max, color='red', alpha=0.3)
-    ax1.set_xlabel('Iterations', fontsize=12)
+    # Process accuracy data
+    acc_means = [np.mean(epoch_accs) for epoch_accs in train_accuracies]
+    acc_stds = [np.std(epoch_accs) for epoch_accs in train_accuracies]
+    
+    # Process loss data
+    loss_means = [np.mean(epoch_losses) for epoch_losses in train_losses]
+    loss_stds = [np.std(epoch_losses) for epoch_losses in train_losses]
+    
+    # Calculate upper and lower bounds with standard deviations
+    acc_upper = [mean + std for mean, std in zip(acc_means, acc_stds)]
+    acc_lower = [mean - std for mean, std in zip(acc_means, acc_stds)]
+    
+    loss_upper = [mean + std for mean, std in zip(loss_means, loss_stds)]
+    loss_lower = [mean - std for mean, std in zip(loss_means, loss_stds)]
+    
+    # Plot accuracy with mean and std deviation
+    ax1.plot(epochs, acc_means, 'r-', linewidth=2, label='Mean Accuracy')
+    ax1.fill_between(epochs, acc_lower, acc_upper, color='red', alpha=0.3, label='±1 Std Dev')
+    ax1.set_xlabel('Epochs', fontsize=12)
     ax1.set_ylabel('Accuracy (%)', fontsize=12)
     ax1.set_title('Training Set Accuracy Curve', fontsize=14, fontweight='bold')
     ax1.legend(loc='lower right', fontsize=10)
     ax1.grid(True, linestyle='--', alpha=0.7)
-    ax1.set_xlim(1, len(train_accuracies_min))
-    min_acc = min(train_accuracies_min) * 0.95
-    max_acc = max(train_accuracies_max) * 1.05
+    ax1.set_xlim(1, len(train_accuracies))
+    
+    # Set y-axis limits for accuracy with some padding
+    min_acc = max(0, min([min(acc_lower), min(acc_means)]) * 0.95)  # Ensure non-negative
+    max_acc = min(100, max([max(acc_upper), max(acc_means)]) * 1.05)  # Cap at 100%
     ax1.set_ylim(min_acc, max_acc)
     
-    # Plot loss with fill between min and max values
-    ax2.plot(iterations, train_losses_mean, 'b-', linewidth=2, label='Average Loss')
-    # ax2.plot(iterations, train_losses_max, 'b-', linewidth=1, alpha=0.6)
-    # ax2.plot(iterations, train_losses_min, 'b-', linewidth=1, alpha=0.6)
-    # ax2.fill_between(iterations, train_losses_min, train_losses_max, color='blue', alpha=0.3)
-    ax2.set_xlabel('Iterations', fontsize=12)
+    # Plot loss with mean and std deviation
+    ax2.plot(epochs, loss_means, 'b-', linewidth=2, label='Mean Loss')
+    ax2.fill_between(epochs, loss_lower, loss_upper, color='blue', alpha=0.3, label='±1 Std Dev')
+    ax2.set_xlabel('Epochs', fontsize=12)
     ax2.set_ylabel('Loss', fontsize=12)
     ax2.set_title('Training Set Loss Curve', fontsize=14, fontweight='bold')
     ax2.legend(loc='upper right', fontsize=10)
     ax2.grid(True, linestyle='--', alpha=0.7)
-    ax2.set_xlim(1, len(train_losses_min))
-    # Set y-axis range to make the fill area more visible
-    min_loss = min(train_losses_min) * 0.95
-    max_loss = max(train_losses_max) * 1.05
+    ax2.set_xlim(1, len(train_losses))
+    
+    # Set y-axis limits for loss with some padding
+    min_loss = max(0, min([min(loss_lower), min(loss_means)]) * 0.95)  # Ensure non-negative
+    max_loss = max([max(loss_upper), max(loss_means)]) * 1.05
     ax2.set_ylim(min_loss, max_loss)
     
     plt.tight_layout()
@@ -330,14 +345,14 @@ def main():
     
     # Create dataset and dataloader
     train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
     
     # Initialize model
     model = BiGRUAttentionModel(
         input_dim=num_dim,
-        hidden_dim=5,
+        hidden_dim=6,
         num_classes=num_class,
-        num_heads=2
+        num_heads=3
     ).to(device)
     
     # Print model summary
@@ -365,10 +380,8 @@ def main():
     
     # Training loop
     num_epochs = 500
-    train_losses_min = []
-    train_losses_max = []
-    train_accuracies_min = []
-    train_accuracies_max = []
+    train_losses = []
+    train_accuracies = []
     
     for epoch in tqdm(range(num_epochs)):
         model.train()
@@ -412,20 +425,9 @@ def main():
         # Update learning rate
         scheduler.step()
         
-        # If this epoch has multiple batches, record max and min values
-        if len(batch_losses) > 0:
-            train_losses_min.append(min(batch_losses))
-            train_losses_max.append(max(batch_losses))
-            train_accuracies_min.append(min(batch_accuracies))
-            train_accuracies_max.append(max(batch_accuracies))
-        else:
-            # If there's only one batch (unlikely), add some variation for visualization
-            avg_loss = epoch_loss / len(train_dataset)
-            avg_accuracy = 100 * correct / total
-            train_losses_min.append(avg_loss * 0.95)
-            train_losses_max.append(avg_loss * 1.05)
-            train_accuracies_min.append(avg_accuracy * 0.95)
-            train_accuracies_max.append(avg_accuracy * 1.05)
+        # Store epoch statistics
+        train_losses.append(batch_losses)
+        train_accuracies.append(batch_accuracies)
         
         # Calculate average loss and accuracy (only for log output)
         avg_epoch_loss = epoch_loss / len(train_dataset)
@@ -436,7 +438,7 @@ def main():
             print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_epoch_loss:.4f}, Accuracy: {avg_accuracy:.2f}%')
     
     # Plot training progress
-    plot_training_progress(train_losses_min, train_losses_max, train_accuracies_min, train_accuracies_max)
+    plot_training_progress(train_losses, train_accuracies)
     
     # Evaluate model
     model.eval()

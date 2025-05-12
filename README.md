@@ -32,6 +32,7 @@ To set up environment:
 To train and evaluate the model:
 
 ```bash
+conda activate bigru_attention
 python -X utf8 main.py
 ```
 

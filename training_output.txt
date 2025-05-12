@@ -24,36 +24,36 @@ Class 2: 94 samples (train: 65, test: 29)
 Final data split:
 Training set: 397 samples
 Test set: 172 samples
-input_dim: 10, output_dim: 10, num_heads: 2
+input_dim: 12, output_dim: 12, num_heads: 3
 BiGRUAttentionModel(
-  (gru_forward): GRU(8, 5, batch_first=True)
+  (gru_forward): GRU(8, 6, batch_first=True)
   (flip): FlipLayer()
-  (gru_backward): GRU(8, 5, batch_first=True)
+  (gru_backward): GRU(8, 6, batch_first=True)
   (self_attention): SelfAttentionLayer(
     (multihead_attention): MultiheadAttention(
-      (out_proj): NonDynamicallyQuantizableLinear(in_features=10, out_features=10, bias=True)
+      (out_proj): NonDynamicallyQuantizableLinear(in_features=12, out_features=12, bias=True)
     )
-    (projection): Linear(in_features=10, out_features=10, bias=True)
+    (projection): Linear(in_features=12, out_features=12, bias=True)
   )
-  (fc): Linear(in_features=10, out_features=3, bias=True)
+  (fc): Linear(in_features=12, out_features=3, bias=True)
 )
 
 Generating model visualization...
 Model visualization saved to: model_visualization.png
-Epoch [50/500], Loss: 0.4111, Accuracy: 90.18%
-Epoch [100/500], Loss: 0.3952, Accuracy: 91.69%
-Epoch [150/500], Loss: 0.3846, Accuracy: 92.44%
-Epoch [200/500], Loss: 0.3763, Accuracy: 91.69%
-Epoch [250/500], Loss: 0.3710, Accuracy: 92.19%
-Epoch [300/500], Loss: 0.3624, Accuracy: 92.19%
-Epoch [350/500], Loss: 0.3571, Accuracy: 92.44%
-Epoch [400/500], Loss: 0.3562, Accuracy: 92.70%
-Epoch [450/500], Loss: 0.3500, Accuracy: 92.44%
-Epoch [500/500], Loss: 0.3478, Accuracy: 92.70%
+Epoch [50/500], Loss: 0.4198, Accuracy: 89.67%
+Epoch [100/500], Loss: 0.3961, Accuracy: 91.69%
+Epoch [150/500], Loss: 0.3864, Accuracy: 92.19%
+Epoch [200/500], Loss: 0.3817, Accuracy: 91.94%
+Epoch [250/500], Loss: 0.3791, Accuracy: 91.18%
+Epoch [300/500], Loss: 0.3690, Accuracy: 91.18%
+Epoch [350/500], Loss: 0.3611, Accuracy: 92.19%
+Epoch [400/500], Loss: 0.3572, Accuracy: 92.19%
+Epoch [450/500], Loss: 0.3522, Accuracy: 92.19%
+Epoch [500/500], Loss: 0.3515, Accuracy: 92.70%
 Performance Metrics:
-    Polygon Area Metric: 0.85
+    Polygon Area Metric: 0.84
 Classification Accuracy: 0.92
-            Sensitivity: 0.92
+            Sensitivity: 0.91
             Specificity: 0.95
        Area Under Curve: 0.93
       Kappa Coefficient: 0.87

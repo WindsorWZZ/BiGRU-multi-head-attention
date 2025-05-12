@@ -12,6 +12,8 @@ import random
 from tqdm import tqdm
 import warnings
 import locale
+from torchviz import make_dot
+import torch.nn.functional as F
 
 # Set locale to UTF-8
 try:
@@ -38,27 +40,49 @@ def set_seed(seed=42):
     torch.backends.cudnn.benchmark = False
 
 # Define a function to plot training progress
-def plot_training_progress(train_losses, train_accuracies):
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8))
+def plot_training_progress(train_losses_min, train_losses_max, train_accuracies_min, train_accuracies_max):
+    # 设置中文字体支持
+    plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial']
+    plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
     
-    # Plot accuracy
-    iterations = range(1, len(train_accuracies) + 1)
-    ax1.plot(iterations, train_accuracies, 'r-', linewidth=1)
-    ax1.set_xlabel('Iterations')
-    ax1.set_ylabel('Accuracy')
-    ax1.set_title('Training Accuracy Curve')
-    ax1.legend(['Training Accuracy'])
-    ax1.grid(True)
-    ax1.set_xlim(1, len(train_accuracies))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
     
-    # Plot loss
-    ax2.plot(iterations, train_losses, 'b-', linewidth=1)
-    ax2.set_xlabel('Iterations')
-    ax2.set_ylabel('Loss')
-    ax2.set_title('Training Loss Curve')
-    ax2.legend(['Training Loss'])
-    ax2.grid(True)
-    ax2.set_xlim(1, len(train_losses))
+    # 计算均值用于绘制
+    train_accuracies_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_accuracies_min, train_accuracies_max)]
+    train_losses_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_losses_min, train_losses_max)]
+    
+    # Plot accuracy with fill between min and max values
+    iterations = range(1, len(train_accuracies_min) + 1)
+    ax1.plot(iterations, train_accuracies_mean, 'g-', linewidth=2, label='平均准确率')
+    ax1.plot(iterations, train_accuracies_max, 'r-', linewidth=1, alpha=0.6, label='最大准确率')
+    ax1.plot(iterations, train_accuracies_min, 'b-', linewidth=1, alpha=0.6, label='最小准确率')
+    ax1.fill_between(iterations, train_accuracies_min, train_accuracies_max, color='skyblue', alpha=0.3)
+    ax1.set_xlabel('迭代次数', fontsize=12)
+    ax1.set_ylabel('准确率 (%)', fontsize=12)
+    ax1.set_title('训练准确率变化范围', fontsize=14, fontweight='bold')
+    ax1.legend(loc='lower right', fontsize=10)
+    ax1.grid(True, linestyle='--', alpha=0.7)
+    ax1.set_xlim(1, len(train_accuracies_min))
+    # 设置y轴范围，让填充区域更明显
+    min_acc = min(train_accuracies_min) * 0.95
+    max_acc = max(train_accuracies_max) * 1.05
+    ax1.set_ylim(min_acc, max_acc)
+    
+    # Plot loss with fill between min and max values
+    ax2.plot(iterations, train_losses_mean, 'g-', linewidth=2, label='平均损失')
+    ax2.plot(iterations, train_losses_max, 'r-', linewidth=1, alpha=0.6, label='最大损失')
+    ax2.plot(iterations, train_losses_min, 'b-', linewidth=1, alpha=0.6, label='最小损失')
+    ax2.fill_between(iterations, train_losses_min, train_losses_max, color='salmon', alpha=0.3)
+    ax2.set_xlabel('迭代次数', fontsize=12)
+    ax2.set_ylabel('损失值', fontsize=12)
+    ax2.set_title('训练损失变化范围', fontsize=14, fontweight='bold')
+    ax2.legend(loc='upper right', fontsize=10)
+    ax2.grid(True, linestyle='--', alpha=0.7)
+    ax2.set_xlim(1, len(train_losses_min))
+    # 设置y轴范围，让填充区域更明显
+    min_loss = min(train_losses_min) * 0.95
+    max_loss = max(train_losses_max) * 1.05
+    ax2.set_ylim(min_loss, max_loss)
     
     plt.tight_layout()
     plt.savefig('training_progress.png', dpi=300, bbox_inches='tight')
@@ -153,6 +177,36 @@ def plot_roc_curve_multi(y_true, y_pred, n_classes):
     plt.savefig('roc_curve.png', dpi=300, bbox_inches='tight')
     plt.close()
 
+# 添加简单的模型可视化函数
+def visualize_model(model, input_shape, filename='model_visualization.png'):
+    """
+    使用torchviz生成简单的模型结构可视化并保存到文件
+    
+    参数:
+    model: PyTorch模型
+    input_shape: 输入的形状，例如(batch_size, input_dim)
+    filename: 保存的文件名
+    """
+        
+    # 创建一个示例输入
+    device = next(model.parameters()).device
+    x = torch.randn(input_shape).to(device)
+    
+    # 获取模型输出
+    y = model(x)
+    
+    # 创建计算图可视化
+    dot = make_dot(y, params=dict(list(model.named_parameters())))
+    
+    # 设置图形格式和大小
+    dot.attr('graph', rankdir='TB', size='12,12')  # 从上到下的布局，设置大小
+    dot.attr('node', shape='box', style='filled', color='lightblue')
+    
+    # 渲染并保存图像
+    dot.render(filename.replace('.png', ''), format='png', cleanup=True)
+    print(f"模型可视化已保存到: {filename}")
+    return True
+
 def main():
     # Turn off warnings
     warnings.filterwarnings('ignore')
@@ -169,7 +223,7 @@ def main():
     
     # Load data
     try:
-        print("Attempting to load System.xlsx...")
+        print("Attempting to load data.xlsx...")
         data = pd.read_excel('data.xlsx', header=0).values
         print(f"Successfully loaded data with shape: {data.shape}")
         
@@ -278,6 +332,10 @@ def main():
     # Print model summary
     print(model)
     
+    # 添加模型可视化 - 在模型初始化后调用
+    print("\n生成模型可视化...")
+    visualize_model(model, input_shape=(1, num_dim), filename='model_visualization.png')
+    
     # Define loss function and optimizer
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(
@@ -295,14 +353,20 @@ def main():
     
     # Training loop
     num_epochs = 500 
-    train_losses = []
-    train_accuracies = []
+    train_losses_min = []
+    train_losses_max = []
+    train_accuracies_min = []
+    train_accuracies_max = []
     
     for epoch in tqdm(range(num_epochs)):
         model.train()
         epoch_loss = 0
         correct = 0
         total = 0
+        
+        # 用于记录每个epoch内的batch统计数据
+        batch_losses = []
+        batch_accuracies = []
         
         for inputs, targets in train_loader:
             # Forward pass
@@ -318,28 +382,49 @@ def main():
             
             optimizer.step()
             
-            # Calculate metrics
-            epoch_loss += loss.item() * inputs.size(0)
+            # Calculate metrics for this batch
+            batch_loss = loss.item()  # 单个批次的损失（不乘以batch size）
+            batch_losses.append(batch_loss)
+            
             _, predicted = torch.max(outputs, 1)
-            total += targets.size(0)
-            correct += (predicted == targets).sum().item()
+            batch_correct = (predicted == targets).sum().item()
+            batch_total = targets.size(0)
+            batch_accuracy = 100 * batch_correct / batch_total
+            batch_accuracies.append(batch_accuracy)
+            
+            # 累计总体统计
+            epoch_loss += batch_loss * inputs.size(0)  # 累计损失需要考虑batch大小
+            total += batch_total
+            correct += batch_correct
         
         # Update learning rate
         scheduler.step()
         
-        # Calculate average loss and accuracy
-        epoch_loss = epoch_loss / len(train_dataset)
-        accuracy = 100 * correct / total
+        # 如果这个epoch有多个batch，记录最大和最小值
+        if len(batch_losses) > 0:
+            train_losses_min.append(min(batch_losses))
+            train_losses_max.append(max(batch_losses))
+            train_accuracies_min.append(min(batch_accuracies))
+            train_accuracies_max.append(max(batch_accuracies))
+        else:
+            # 如果只有一个batch（不太可能），则添加一些变化以便于可视化
+            avg_loss = epoch_loss / len(train_dataset)
+            avg_accuracy = 100 * correct / total
+            train_losses_min.append(avg_loss * 0.95)
+            train_losses_max.append(avg_loss * 1.05)
+            train_accuracies_min.append(avg_accuracy * 0.95)
+            train_accuracies_max.append(avg_accuracy * 1.05)
         
-        train_losses.append(epoch_loss)
-        train_accuracies.append(accuracy)
+        # 计算平均损失和准确率（仅用于日志输出）
+        avg_epoch_loss = epoch_loss / len(train_dataset)
+        avg_accuracy = 100 * correct / total
         
         # Print progress
         if (epoch + 1) % 50 == 0:
-            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {epoch_loss:.4f}, Accuracy: {accuracy:.2f}%')
+            print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {avg_epoch_loss:.4f}, Accuracy: {avg_accuracy:.2f}%')
     
     # Plot training progress
-    plot_training_progress(train_losses, train_accuracies)
+    plot_training_progress(train_losses_min, train_losses_max, train_accuracies_min, train_accuracies_max)
     
     # Evaluate model
     model.eval()

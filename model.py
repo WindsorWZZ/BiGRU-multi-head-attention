@@ -7,7 +7,7 @@ class SelfAttentionLayer(nn.Module):
     """
     Self-attention layer implementation similar to MATLAB's selfAttentionLayer
     """
-    def __init__(self, input_dim, output_dim, num_heads=1):
+    def __init__(self, input_dim, output_dim, num_heads=8):
         super(SelfAttentionLayer, self).__init__()
         self.num_heads = num_heads
         self.input_dim = input_dim
@@ -104,10 +104,10 @@ class BiGRUAttentionModel(nn.Module):
         # Concatenate the forward and backward hidden states
         concat_hidden = torch.cat((forward_hidden, backward_hidden), dim=1)  # (batch_size, 2*hidden_dim)
         
-        # Apply self-attention on the input (as in MATLAB code)
-        attention_out = self.self_attention(x)
+        # Apply self-attention on the input
+        attention_out = self.self_attention(concat_hidden)
         
         # Apply fully connected layer to the concatenated hidden states
-        output = self.fc(concat_hidden)
+        output = self.fc(attention_out)
         
         return output 

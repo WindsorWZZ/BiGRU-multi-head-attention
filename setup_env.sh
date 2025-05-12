@@ -25,7 +25,10 @@ echo "Installing dependencies..."
 conda install -y pytorch cpuonly -c pytorch
 
 # 安装其他依赖
-conda install -y numpy pandas scikit-learn matplotlib tqdm openpyxl
+conda install -y numpy pandas scikit-learn matplotlib tqdm openpyxl python-graphviz
+
+# 安装torchviz (用于PyTorch模型可视化)
+pip install torchviz
 
 echo "Environment setup complete!"
 echo "To activate the environment, run: conda activate $ENV_NAME"

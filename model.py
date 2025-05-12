@@ -81,9 +81,6 @@ class BiGRUAttentionModel(nn.Module):
         # Fully connected layer
         self.fc = nn.Linear(2*hidden_dim, num_classes)
         
-        # Softmax layer
-        self.soft = nn.Softmax(dim=1)
-        
     def forward(self, x):
         # X shape: (batch_size, input_dim) or (batch_size, seq_len, input_dim)
         
@@ -112,8 +109,5 @@ class BiGRUAttentionModel(nn.Module):
         
         # Apply fully connected layer to the concatenated hidden states
         fc_out = self.fc(attention_out)
-
-        # # Apply softmax to the output
-        output = self.soft(fc_out)
         
-        return output 
+        return fc_out 

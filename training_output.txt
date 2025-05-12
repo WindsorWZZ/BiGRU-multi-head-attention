@@ -1,0 +1,63 @@
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+Intel MKL WARNING: Support of Intel(R) Streaming SIMD Extensions 4.2 (Intel(R) SSE4.2) enabled only processors has been deprecated. Intel oneAPI Math Kernel Library 2025.0 will require Intel(R) Advanced Vector Extensions (Intel(R) AVX) instructions.
+
+Using random seed: 9365
+To reproduce experimental results, use the same seed value.
+Using device: cpu
+Attempting to load data.xlsx...
+Successfully loaded data with shape: (569, 9)
+
+Label mapping:
+Normalcy -> 0
+Warning -> 1
+Malfunction -> 2
+
+Data analysis:
+- Number of samples: 569
+- Number of features: 8
+- Number of classes: 3
+- Unique labels: [0 1 2]
+Class 0: 319 samples (train: 223, test: 96)
+Class 1: 156 samples (train: 109, test: 47)
+Class 2: 94 samples (train: 65, test: 29)
+
+Final data split:
+Training set: 397 samples
+Test set: 172 samples
+input_dim: 10, output_dim: 10, num_heads: 2
+BiGRUAttentionModel(
+  (gru_forward): GRU(8, 5, batch_first=True)
+  (flip): FlipLayer()
+  (gru_backward): GRU(8, 5, batch_first=True)
+  (self_attention): SelfAttentionLayer(
+    (multihead_attention): MultiheadAttention(
+      (out_proj): NonDynamicallyQuantizableLinear(in_features=10, out_features=10, bias=True)
+    )
+    (projection): Linear(in_features=10, out_features=10, bias=True)
+  )
+  (fc): Linear(in_features=10, out_features=3, bias=True)
+)
+
+Generating model visualization...
+Model visualization saved to: model_visualization.png
+Epoch [50/500], Loss: 0.4111, Accuracy: 90.18%
+Epoch [100/500], Loss: 0.3952, Accuracy: 91.69%
+Epoch [150/500], Loss: 0.3846, Accuracy: 92.44%
+Epoch [200/500], Loss: 0.3763, Accuracy: 91.69%
+Epoch [250/500], Loss: 0.3710, Accuracy: 92.19%
+Epoch [300/500], Loss: 0.3624, Accuracy: 92.19%
+Epoch [350/500], Loss: 0.3571, Accuracy: 92.44%
+Epoch [400/500], Loss: 0.3562, Accuracy: 92.70%
+Epoch [450/500], Loss: 0.3500, Accuracy: 92.44%
+Epoch [500/500], Loss: 0.3478, Accuracy: 92.70%
+Performance Metrics:
+    Polygon Area Metric: 0.85
+Classification Accuracy: 0.92
+            Sensitivity: 0.92
+            Specificity: 0.95
+       Area Under Curve: 0.93
+      Kappa Coefficient: 0.87
+              F-measure: 0.93
+
+Training Set Accuracy: 92.70%
+Test Set Accuracy: 92.44%

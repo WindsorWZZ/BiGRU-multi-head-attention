@@ -29,7 +29,16 @@ from model import BiGRUAttentionModel
 from polygon_area_metric import polygon_area_metric
 
 # Set seeds for reproducibility
-def set_seed(seed=42):
+def set_seed(seed=9365):
+    if seed is None:
+        # Generate a random seed between 1 and 10000
+        seed = random.randint(1, 10000)
+        
+    # Print the seed for future reproducibility
+    print(f"\nUsing random seed: {seed}")
+    print(f"To reproduce experimental results, use the same seed value.")
+    
+    # Set seeds for all libraries
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -38,48 +47,49 @@ def set_seed(seed=42):
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    
+    return seed
 
 # Define a function to plot training progress
 def plot_training_progress(train_losses_min, train_losses_max, train_accuracies_min, train_accuracies_max):
-    # 设置中文字体支持
-    plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial']
-    plt.rcParams['axes.unicode_minus'] = False  # 正确显示负号
+    # # Set Chinese font support
+    # plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans', 'Arial']
+    # plt.rcParams['axes.unicode_minus'] = False  # Correctly display negative signs
     
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10))
     
-    # 计算均值用于绘制
+    # Calculate means for plotting
     train_accuracies_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_accuracies_min, train_accuracies_max)]
     train_losses_mean = [(min_val + max_val) / 2 for min_val, max_val in zip(train_losses_min, train_losses_max)]
     
     # Plot accuracy with fill between min and max values
     iterations = range(1, len(train_accuracies_min) + 1)
-    ax1.plot(iterations, train_accuracies_mean, 'g-', linewidth=2, label='平均准确率')
-    ax1.plot(iterations, train_accuracies_max, 'r-', linewidth=1, alpha=0.6, label='最大准确率')
-    ax1.plot(iterations, train_accuracies_min, 'b-', linewidth=1, alpha=0.6, label='最小准确率')
-    ax1.fill_between(iterations, train_accuracies_min, train_accuracies_max, color='skyblue', alpha=0.3)
-    ax1.set_xlabel('迭代次数', fontsize=12)
-    ax1.set_ylabel('准确率 (%)', fontsize=12)
-    ax1.set_title('训练准确率变化范围', fontsize=14, fontweight='bold')
+    ax1.plot(iterations, train_accuracies_mean, 'r-', linewidth=2, label='Average Accuracy')
+    # ax1.plot(iterations, train_accuracies_max, 'r-', linewidth=1, alpha=0.6)
+    # ax1.plot(iterations, train_accuracies_min, 'r-', linewidth=1, alpha=0.6)
+    # ax1.fill_between(iterations, train_accuracies_min, train_accuracies_max, color='red', alpha=0.3)
+    ax1.set_xlabel('Iterations', fontsize=12)
+    ax1.set_ylabel('Accuracy (%)', fontsize=12)
+    ax1.set_title('Training Set Accuracy Curve', fontsize=14, fontweight='bold')
     ax1.legend(loc='lower right', fontsize=10)
     ax1.grid(True, linestyle='--', alpha=0.7)
     ax1.set_xlim(1, len(train_accuracies_min))
-    # 设置y轴范围，让填充区域更明显
     min_acc = min(train_accuracies_min) * 0.95
     max_acc = max(train_accuracies_max) * 1.05
     ax1.set_ylim(min_acc, max_acc)
     
     # Plot loss with fill between min and max values
-    ax2.plot(iterations, train_losses_mean, 'g-', linewidth=2, label='平均损失')
-    ax2.plot(iterations, train_losses_max, 'r-', linewidth=1, alpha=0.6, label='最大损失')
-    ax2.plot(iterations, train_losses_min, 'b-', linewidth=1, alpha=0.6, label='最小损失')
-    ax2.fill_between(iterations, train_losses_min, train_losses_max, color='salmon', alpha=0.3)
-    ax2.set_xlabel('迭代次数', fontsize=12)
-    ax2.set_ylabel('损失值', fontsize=12)
-    ax2.set_title('训练损失变化范围', fontsize=14, fontweight='bold')
+    ax2.plot(iterations, train_losses_mean, 'b-', linewidth=2, label='Average Loss')
+    # ax2.plot(iterations, train_losses_max, 'b-', linewidth=1, alpha=0.6)
+    # ax2.plot(iterations, train_losses_min, 'b-', linewidth=1, alpha=0.6)
+    # ax2.fill_between(iterations, train_losses_min, train_losses_max, color='blue', alpha=0.3)
+    ax2.set_xlabel('Iterations', fontsize=12)
+    ax2.set_ylabel('Loss', fontsize=12)
+    ax2.set_title('Training Set Loss Curve', fontsize=14, fontweight='bold')
     ax2.legend(loc='upper right', fontsize=10)
     ax2.grid(True, linestyle='--', alpha=0.7)
     ax2.set_xlim(1, len(train_losses_min))
-    # 设置y轴范围，让填充区域更明显
+    # Set y-axis range to make the fill area more visible
     min_loss = min(train_losses_min) * 0.95
     max_loss = max(train_losses_max) * 1.05
     ax2.set_ylim(min_loss, max_loss)
@@ -177,34 +187,34 @@ def plot_roc_curve_multi(y_true, y_pred, n_classes):
     plt.savefig('roc_curve.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-# 添加简单的模型可视化函数
+# Add a simple model visualization function
 def visualize_model(model, input_shape, filename='model_visualization.png'):
     """
-    使用torchviz生成简单的模型结构可视化并保存到文件
+    Use torchviz to generate a simple model structure visualization and save it to a file
     
-    参数:
-    model: PyTorch模型
-    input_shape: 输入的形状，例如(batch_size, input_dim)
-    filename: 保存的文件名
+    Parameters:
+    model: PyTorch model
+    input_shape: Input shape, e.g., (batch_size, input_dim)
+    filename: Name of the file to save
     """
         
-    # 创建一个示例输入
+    # Create a sample input
     device = next(model.parameters()).device
     x = torch.randn(input_shape).to(device)
     
-    # 获取模型输出
+    # Get model output
     y = model(x)
     
-    # 创建计算图可视化
+    # Create computational graph visualization
     dot = make_dot(y, params=dict(list(model.named_parameters())))
     
-    # 设置图形格式和大小
-    dot.attr('graph', rankdir='TB', size='12,12')  # 从上到下的布局，设置大小
+    # Set graph format and size
+    dot.attr('graph', rankdir='TB', size='12,12')  # Top-to-bottom layout, set size
     dot.attr('node', shape='box', style='filled', color='lightblue')
     
-    # 渲染并保存图像
+    # Render and save the image
     dot.render(filename.replace('.png', ''), format='png', cleanup=True)
-    print(f"模型可视化已保存到: {filename}")
+    print(f"Model visualization saved to: {filename}")
     return True
 
 def main():
@@ -214,8 +224,8 @@ def main():
     # Clear plots, etc.
     plt.close('all')
     
-    # Set seed for reproducibility
-    set_seed(42)
+    # Set seed for reproducibility with a random value
+    random_seed = set_seed()
     
     # CUDA settings
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -233,16 +243,16 @@ def main():
         if data.shape[1] < 2:
             raise ValueError(f"Data must have at least 2 columns (features + labels). Found {data.shape[1]} columns")
             
-        # 创建标签映射字典，确保顺序：Normalcy -> 0, Warning -> 1, Malfunction -> 2
+        # Create label mapping dictionary, ensuring order: Normalcy -> 0, Warning -> 1, Malfunction -> 2
         label_order = ['Normalcy', 'Warning', 'Malfunction']
         label_map = {label: idx for idx, label in enumerate(label_order)}
-        # 创建反向映射字典
+        # Create reverse mapping dictionary
         reverse_label_map = {idx: label for label, idx in label_map.items()}
         print("\nLabel mapping:")
         for label, idx in label_map.items():
             print(f"{label} -> {idx}")
             
-        # 将标签转换为数字
+        # Convert labels to numbers
         data[:, -1] = np.array([label_map[label] for label in data[:, -1]])
             
     except FileNotFoundError:
@@ -333,12 +343,12 @@ def main():
     # Print model summary
     print(model)
     
-    # 添加模型可视化 - 在模型初始化后调用
-    print("\n生成模型可视化...")
+    # Add model visualization - called after model initialization
+    print("\nGenerating model visualization...")
     visualize_model(model, input_shape=(1, num_dim), filename='model_visualization.png')
     
     # Define loss function and optimizer
-    criterion = nn.NLLLoss() # Model already has a softmax layer
+    criterion = nn.CrossEntropyLoss()
 
     optimizer = optim.Adam(
         model.parameters(),
@@ -366,7 +376,7 @@ def main():
         correct = 0
         total = 0
         
-        # 用于记录每个epoch内的batch统计数据
+        # For recording batch statistics within each epoch
         batch_losses = []
         batch_accuracies = []
         
@@ -385,7 +395,7 @@ def main():
             optimizer.step()
             
             # Calculate metrics for this batch
-            batch_loss = loss.item()  # 单个批次的损失（不乘以batch size）
+            batch_loss = loss.item()  # Single batch loss (not multiplied by batch size)
             batch_losses.append(batch_loss)
             
             _, predicted = torch.max(outputs, 1)
@@ -394,22 +404,22 @@ def main():
             batch_accuracy = 100 * batch_correct / batch_total
             batch_accuracies.append(batch_accuracy)
             
-            # 累计总体统计
-            epoch_loss += batch_loss * inputs.size(0)  # 累计损失需要考虑batch大小
+            # Accumulate overall statistics
+            epoch_loss += batch_loss * inputs.size(0)  # Accumulated loss needs to consider batch size
             total += batch_total
             correct += batch_correct
         
         # Update learning rate
         scheduler.step()
         
-        # 如果这个epoch有多个batch，记录最大和最小值
+        # If this epoch has multiple batches, record max and min values
         if len(batch_losses) > 0:
             train_losses_min.append(min(batch_losses))
             train_losses_max.append(max(batch_losses))
             train_accuracies_min.append(min(batch_accuracies))
             train_accuracies_max.append(max(batch_accuracies))
         else:
-            # 如果只有一个batch（不太可能），则添加一些变化以便于可视化
+            # If there's only one batch (unlikely), add some variation for visualization
             avg_loss = epoch_loss / len(train_dataset)
             avg_accuracy = 100 * correct / total
             train_losses_min.append(avg_loss * 0.95)
@@ -417,7 +427,7 @@ def main():
             train_accuracies_min.append(avg_accuracy * 0.95)
             train_accuracies_max.append(avg_accuracy * 1.05)
         
-        # 计算平均损失和准确率（仅用于日志输出）
+        # Calculate average loss and accuracy (only for log output)
         avg_epoch_loss = epoch_loss / len(train_dataset)
         avg_accuracy = 100 * correct / total
         

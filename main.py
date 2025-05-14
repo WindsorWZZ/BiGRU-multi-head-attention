@@ -184,7 +184,7 @@ def plot_roc_curve_multi(y_true, y_pred, n_classes):
     
     # Plot micro-average ROC curve
     plt.plot(fpr["micro"], tpr["micro"],
-             label=f'Micro-average ROC curve (AUC = {roc_auc["micro"]:.2f})',
+             label=f'AUC = {roc_auc["micro"]:.2f}',
              color='red', linestyle='--', lw=2)
     
     # Plot diagonal line

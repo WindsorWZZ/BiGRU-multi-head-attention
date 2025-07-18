@@ -1,6 +1,21 @@
 # BiGRU with Multi-head Attention
 
-This repository implements a Bidirectional Gated Recurrent Unit (BiGRU) neural network with Multi-head Attention for sequence classification tasks.
+This repository implements a Bidirectional Gated Recurrent Unit (BiGRU) neural network with Multi-head Attention for sequence classification tasks. Our work demonstrates significant improvements in classification accuracy through the novel combination of bidirectional temporal modeling and multi-head attention mechanisms.
+
+📄 **Research Paper Available**: https://arxiv.org/abs/2506.14830
+
+🎯 **If you find this work useful for your research, please consider citing our paper:**
+
+```bibtex
+@article{wen2025bigruAttention,
+  title={Optimization of bi-directional gated loop cell based on multi-head attention mechanism for SSD health state classification model},
+  author={Wen, Zhizhao and Zhang, Ruoxin and Wang, Chao},
+  journal={arXiv preprint arXiv:2506.14830},
+  year={2025}
+}
+```
+
+⭐ **Star this repository** if you find it helpful and **share it** with your research community!
 
 ## Model Architecture
 

@@ -82,12 +82,15 @@ def plot_training_progress(train_losses, train_accuracies):
     # Plot accuracy with mean and std deviation
     ax1.plot(epochs, acc_means, 'r-', linewidth=2, label='Mean Accuracy')
     ax1.fill_between(epochs, acc_lower, acc_upper, color='red', alpha=0.3, label='±1 Std Dev')
-    ax1.set_xlabel('Epochs', fontsize=12)
-    ax1.set_ylabel('Accuracy (%)', fontsize=12)
-    ax1.set_title('Training Set Accuracy Curve', fontsize=14, fontweight='bold')
-    ax1.legend(loc='lower right', fontsize=10)
+    ax1.set_xlabel('Epochs', fontsize=20)
+    ax1.set_ylabel('Accuracy (%)', fontsize=20)
+    ax1.set_title('Training Set Accuracy Curve', fontsize=22, fontweight='bold')
+    ax1.legend(loc='lower right', fontsize=16)
     ax1.grid(True, linestyle='--', alpha=0.7)
     ax1.set_xlim(1, len(train_accuracies))
+    
+    # Set tick label font sizes
+    ax1.tick_params(axis='both', which='major', labelsize=16)
     
     # Set y-axis limits for accuracy with some padding
     min_acc = max(0, min([min(acc_lower), min(acc_means)]) * 0.95)  # Ensure non-negative
@@ -97,12 +100,15 @@ def plot_training_progress(train_losses, train_accuracies):
     # Plot loss with mean and std deviation
     ax2.plot(epochs, loss_means, 'b-', linewidth=2, label='Mean Loss')
     ax2.fill_between(epochs, loss_lower, loss_upper, color='blue', alpha=0.3, label='±1 Std Dev')
-    ax2.set_xlabel('Epochs', fontsize=12)
-    ax2.set_ylabel('Loss', fontsize=12)
-    ax2.set_title('Training Set Loss Curve', fontsize=14, fontweight='bold')
-    ax2.legend(loc='upper right', fontsize=10)
+    ax2.set_xlabel('Epochs', fontsize=20)
+    ax2.set_ylabel('Loss', fontsize=20)
+    ax2.set_title('Training Set Loss Curve', fontsize=22, fontweight='bold')
+    ax2.legend(loc='upper right', fontsize=16)
     ax2.grid(True, linestyle='--', alpha=0.7)
     ax2.set_xlim(1, len(train_losses))
+    
+    # Set tick label font sizes
+    ax2.tick_params(axis='both', which='major', labelsize=16)
     
     # Set y-axis limits for loss with some padding
     min_loss = max(0, min([min(loss_lower), min(loss_means)]) * 0.95)  # Ensure non-negative
@@ -133,19 +139,20 @@ def plot_confusion_matrix(y_true, y_pred, title):
     
     # Create heatmap
     im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
-    ax.set_title(title)
+    ax.set_title(title, fontsize=22, fontweight='bold')
     
     # Add colorbar
     cbar = plt.colorbar(im)
-    cbar.set_label('Number of Samples')
+    cbar.set_label('Number of Samples', fontsize=18)
+    cbar.ax.tick_params(labelsize=16)
     
     # Set axis labels
     classes = np.unique(np.concatenate((y_true, y_pred)))
     tick_marks = np.arange(len(classes))
     ax.set_xticks(tick_marks)
     ax.set_yticks(tick_marks)
-    ax.set_xticklabels(classes)
-    ax.set_yticklabels(classes)
+    ax.set_xticklabels(classes, fontsize=16)
+    ax.set_yticklabels(classes, fontsize=16)
     
     # Add text annotations
     thresh = cm.max() / 2.
@@ -153,10 +160,11 @@ def plot_confusion_matrix(y_true, y_pred, title):
         for j in range(cm.shape[1]):
             ax.text(j, i, format(cm[i, j], 'd'),
                    horizontalalignment="center",
-                   color="white" if cm[i, j] > thresh else "black")
+                   color="white" if cm[i, j] > thresh else "black",
+                   fontsize=18)
     
-    ax.set_ylabel('True Label')
-    ax.set_xlabel('Predicted Label')
+    ax.set_ylabel('True Label', fontsize=20)
+    ax.set_xlabel('Predicted Label', fontsize=20)
     plt.tight_layout()
     plt.savefig(f'confusion_matrix_{title.lower().replace(" ", "_")}.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -192,11 +200,14 @@ def plot_roc_curve_multi(y_true, y_pred, n_classes):
     
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('ROC Curve')
-    plt.legend(loc="lower right")
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.title('ROC Curve', fontsize=22, fontweight='bold')
+    plt.legend(loc="lower right", fontsize=16)
     plt.grid(True)
+    
+    # Set tick label font sizes
+    plt.tick_params(axis='both', which='major', labelsize=16)
     
     # Save the figure
     plt.savefig('roc_curve.png', dpi=300, bbox_inches='tight')
